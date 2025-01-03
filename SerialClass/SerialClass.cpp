@@ -4,7 +4,7 @@
 SerialClass::SerialClass(Serial_ & port)
 {
 	USBport=&port;
-	bUSB=true;
+	HWport=NULL;
 	init();
 }
 
@@ -14,7 +14,9 @@ SerialClass::SerialClass(Serial_ & port)
 SerialClass::SerialClass(HardwareSerial & port)
 {
 	HWport=&port;
-	bUSB=false;
+	#ifdef HAS_USB_SERIAL
+	USBport=NULL;
+	#endif
 	init();
 }
 
@@ -23,28 +25,9 @@ void SerialClass::init(void)
 
 }
 
-bool SerialClass::isConnected(void)
-{
-	bool bConnected=!bUSB;
-	#ifdef HAS_USB_SERIAL
-	if (!bConnected)
-	{
-		/*
-		 * Windows: SerialUSB becomes true when connection is established
-		 *          but stays true when USB connection is closed
-		 * 			dtr() becomes false when USB connection is closed
-		 * Linux:   SerialUSB represents the connection state of an
-		 *          USB serial port. no issues
-		 */
-		 bConnected=USBport->dtr();
-	}
-	#endif
-	return bConnected;
-}
-
 SerialClass::operator bool()
 {
-	bool bActive=!bUSB;
+	bool bActive=HWport;
 
 	#ifdef HAS_USB_SERIAL
 	if (!bActive)
@@ -55,6 +38,8 @@ SerialClass::operator bool()
 		 * 			dtr() becomes false when USB connection is closed
 		 * Linux:   SerialUSB represents the connection state of an
 		 *          USB serial port. no issues
+		 * 
+		 * Issue:	A cakk to USBPort costs 10 ms , use dtr() instead
 		 */ 
 		bActive=*USBport;
 		if (bActive)
@@ -64,17 +49,9 @@ SerialClass::operator bool()
 	return bActive;
 }
 
-void SerialClass::message(void)
-{
-	if (bUSB)
-		println(F("USB Serial detected"));
-	else
-		println(F("Hardware Serial detected"));
-}
-
 void SerialClass::begin(unsigned long baud, uint16_t config)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		HWport->begin(baud,config);
 	}	// HardwareSerial
@@ -88,7 +65,7 @@ void SerialClass::begin(unsigned long baud, uint16_t config)
 
 void SerialClass::end()
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		HWport->end();
 	}	// HardwareSerial
@@ -102,7 +79,7 @@ void SerialClass::end()
 
 int	SerialClass::available(void)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		return HWport->available();
 	}	// HardwareSerial
@@ -116,7 +93,7 @@ int	SerialClass::available(void)
 
 int SerialClass::peek(void)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		return HWport->peek();
 	}	// HardwareSerial
@@ -130,7 +107,7 @@ int SerialClass::peek(void)
 
 int SerialClass::read(void)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		return HWport->read();
 	}	// HardwareSerial
@@ -144,7 +121,7 @@ int SerialClass::read(void)
 
 int SerialClass::availableForWrite(void)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		return HWport->availableForWrite();
 	}	// HardwareSerial
@@ -158,7 +135,7 @@ int SerialClass::availableForWrite(void)
 
 void SerialClass::flush(void)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		HWport->flush();
 	}	// HardwareSerial
@@ -172,7 +149,7 @@ void SerialClass::flush(void)
 
 size_t SerialClass::write(uint8_t c)
 {
-	if (!bUSB)
+	if (HWport)
 	{	// HardwareSerial
 		return HWport->write(c);
 	}	// HardwareSerial
@@ -180,6 +157,76 @@ size_t SerialClass::write(uint8_t c)
 	else
 	{	// CDC-Serial
 		return USBport->write(c);
+	}	// CDC-Serial
+	#endif
+}
+
+size_t SerialClass::write(const uint8_t *buffer, size_t size)
+{
+	if (HWport)
+	{	// HardwareSerial
+		return HWport->write(buffer,size);
+	}	// HardwareSerial
+	#ifdef HAS_USB_SERIAL
+	else
+	{	// CDC-Serial
+		return USBport->write(buffer,size);
+	}	// CDC-Serial
+	#endif
+}
+
+size_t SerialClass::readBytes( char *buffer, size_t length)
+{
+	if (HWport)
+	{	// HardwareSerial
+		return HWport->readBytes(buffer,length);
+	}	// HardwareSerial
+	#ifdef HAS_USB_SERIAL
+	else
+	{	// CDC-Serial
+		return USBport->readBytes(buffer,length);
+	}	// CDC-Serial
+	#endif
+}
+
+int32_t SerialClass::readBreak()
+{
+	if (HWport)
+	{	// HardwareSerial
+		return 0;
+	}	// HardwareSerial
+	#ifdef HAS_USB_SERIAL
+	else
+	{	// CDC-Serial
+		return USBport->readBreak();
+	}	// CDC-Serial
+	#endif
+}
+
+bool SerialClass::dtr(void)
+{
+	if (HWport)
+	{	// HardwareSerial
+		return true;
+	}	// HardwareSerial
+	#ifdef HAS_USB_SERIAL
+	else
+	{	// CDC-Serial
+		return USBport->dtr();
+	}	// CDC-Serial
+	#endif
+}
+
+bool SerialClass::rts(void)
+{
+	if (HWport)
+	{	// HardwareSerial
+		return true;
+	}	// HardwareSerial
+	#ifdef HAS_USB_SERIAL
+	else
+	{	// CDC-Serial
+		return USBport->rts();
 	}	// CDC-Serial
 	#endif
 }
