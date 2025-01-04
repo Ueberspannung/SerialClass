@@ -41,12 +41,13 @@ which can be used to detect an open usb connection. But the are two problems:
     The object becomes true when a windows host when a USB Serial Port is opened but stays true when it is closed.
     - Linux Platforms  
 	The object becomes true a ttyUSB is opened and false when it is closed
-	- **Solution**
+	- **Solution**  
 	When a port is opened the dtr() member becomes true and false when it is closed. So when the object is true
 	the dtr() needs to be checked to be sure
-- Problem 2
+- Problem 2:  
 A singel call to the Object itself takes 10 ms blocking. This cant be used if strict timing is required  
-Solution: a call to dtr() is possible even when no usb connection exists.
+    - **Solution:**   
+	a call to dtr() is possible even when no usb connection exists.
 
 ## interface
 the public interface of SerialClass is identical to Serclass_ and HardwareSerial.
@@ -54,7 +55,7 @@ Dependent on the constructor used member calls are redirected either to Hardware
 
 ## Paltforms
 Tested on 
-- AVR without USB  
-- AVR with USB (Atmega32U4)  
-- ARM (SAMD)  
+- AVR without USB (Atmega328 / UNO)
+- AVR with USB (Atmega32U4 / Pro Micro)  
+- ARM (SAMD21G18 / Zero)  
 
