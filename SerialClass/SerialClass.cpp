@@ -79,58 +79,66 @@ void SerialClass::end()
 
 int	SerialClass::available(void)
 {
+	int cnt=0;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->available();
+		cnt=HWport->available();
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->available();
+		cnt=USBport->available();
 	}	// CDC-Serial
 	#endif
+	return cnt;
 }
 
 int SerialClass::peek(void)
 {
+	int next_char=-1;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->peek();
+		next_char=HWport->peek();
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->peek();
+		next_char=USBport->peek();
 	}	// CDC-Serial
 	#endif
+	return next_char;
 }
 
 int SerialClass::read(void)
 {
+	int next_char=-1;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->read();
+		next_char=HWport->read();
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->read();
+		next_char=USBport->read();
 	}	// CDC-Serial
 	#endif
+	return next_char;
 }
 
 int SerialClass::availableForWrite(void)
 {
+	int cnt=0;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->availableForWrite();
+		cnt=HWport->availableForWrite();
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->availableForWrite();
+		cnt=USBport->availableForWrite();
 	}	// CDC-Serial
 	#endif
+	return cnt;
 }
 
 void SerialClass::flush(void)
@@ -149,84 +157,84 @@ void SerialClass::flush(void)
 
 size_t SerialClass::write(uint8_t c)
 {
+	int cnt=0;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->write(c);
+		cnt=HWport->write(c);
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->write(c);
+		cnt=USBport->write(c);
 	}	// CDC-Serial
 	#endif
+	return cnt;
 }
 
 size_t SerialClass::write(const uint8_t *buffer, size_t size)
 {
+	int cnt=0;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->write(buffer,size);
+		cnt=HWport->write(buffer,size);
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->write(buffer,size);
+		cnt=USBport->write(buffer,size);
 	}	// CDC-Serial
 	#endif
+	return cnt;
 }
 
 size_t SerialClass::readBytes( char *buffer, size_t length)
 {
+	int cnt=0;
 	if (HWport)
 	{	// HardwareSerial
-		return HWport->readBytes(buffer,length);
+		cnt=HWport->readBytes(buffer,length);
 	}	// HardwareSerial
 	#ifdef HAS_USB_SERIAL
 	else
 	{	// CDC-Serial
-		return USBport->readBytes(buffer,length);
+		cnt=USBport->readBytes(buffer,length);
 	}	// CDC-Serial
 	#endif
+	return cnt;
 }
 
 int32_t SerialClass::readBreak()
 {
-	if (HWport)
-	{	// HardwareSerial
-		return 0;
-	}	// HardwareSerial
+	int32_t time=0;
 	#ifdef HAS_USB_SERIAL
-	else
+	if (!HWport)
 	{	// CDC-Serial
-		return USBport->readBreak();
+		time=USBport->readBreak();
 	}	// CDC-Serial
 	#endif
+	return time;
 }
 
 bool SerialClass::dtr(void)
 {
-	if (HWport)
-	{	// HardwareSerial
-		return true;
-	}	// HardwareSerial
+	bool bDTR=true;
 	#ifdef HAS_USB_SERIAL
-	else
+	if (!HWport)
 	{	// CDC-Serial
-		return USBport->dtr();
+		bDTR=USBport->dtr();
 	}	// CDC-Serial
 	#endif
+	return bDTR;
 }
 
 bool SerialClass::rts(void)
 {
-	if (HWport)
-	{	// HardwareSerial
-		return true;
-	}	// HardwareSerial
+	bool bRTS=true;
 	#ifdef HAS_USB_SERIAL
-	else
+	if (!HWport)
 	{	// CDC-Serial
-		return USBport->rts();
+		bRTS=USBport->rts();
 	}	// CDC-Serial
 	#endif
+	return bRTS;
 }
